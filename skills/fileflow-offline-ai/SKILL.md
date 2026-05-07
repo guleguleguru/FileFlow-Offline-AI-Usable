@@ -7,6 +7,10 @@ description: Use FileFlow Offline for local Windows file conversion. Trigger whe
 
 Use this skill to operate the FileFlow Offline Windows converter without making the user read the README.
 
+This repository also includes root-level companion instructions for non-Codex agents:
+`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `.windsurfrules`,
+`.cursor/rules/fileflow-offline-ai.mdc`, and `.github/copilot-instructions.md`.
+
 ## Quick Decision
 
 - For a person using the desktop app, open `离线文件转换器.exe` or `启动图形界面.bat`.
@@ -24,6 +28,8 @@ Prefer these paths in order:
 4. Default dist path: `C:/工作/offline-file-converter/dist-agent/离线文件转换器/offline-converter-agent.exe`
 
 Run `scripts/resolve_fileflow.py` from this skill to print discovered GUI and agent executables as JSON.
+In the repository root, other agents can run the same resolver at
+`skills/fileflow-offline-ai/scripts/resolve_fileflow.py`.
 
 ## Agent Commands
 

@@ -1,0 +1,6 @@
+Use AGENTS.md for repository instructions.
+
+For file conversion tasks, locate FileFlow Offline with:
+python skills/fileflow-offline-ai/scripts/resolve_fileflow.py
+
+Use offline-converter-agent.exe with --json for automation. Do not upload user documents. Do not commit vendor, dist, release-components, build, release zips, local documents, or conversion outputs.

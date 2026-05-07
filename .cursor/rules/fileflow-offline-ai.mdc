@@ -1,0 +1,17 @@
+---
+description: Use FileFlow Offline for local PDF, Word, image, and OCR conversion.
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+Use `AGENTS.md` as the source of truth for agent workflows in this repository.
+
+For conversion tasks:
+
+1. Run `python skills/fileflow-offline-ai/scripts/resolve_fileflow.py`.
+2. Use the first `offline-converter-agent.exe` where `agent_exists` is true.
+3. Run conversions with `--json`.
+4. Verify `ok: true` and every output file path exists.
+
+Do not upload user documents or commit generated conversion outputs, bundled runtimes, or release archives.

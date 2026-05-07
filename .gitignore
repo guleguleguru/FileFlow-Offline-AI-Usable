@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Build and release artifacts
+build/
+dist/
+dist-*/
+release-components*/
+*.zip
+*.partial
+*.spec.log
+
+# Bundled third-party runtimes and models are published through Releases, not source git.
+vendor/
+
+# Local conversion inputs and outputs
+agent-output/
+conversion-review/
+packaged-agent-output/
+*.pdf
+*.docx
+*.doc
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.bmp
+*.tif
+*.tiff
+
+# Windows local shortcuts and system files
+*.lnk
+Thumbs.db
+Desktop.ini

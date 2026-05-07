@@ -23,6 +23,8 @@ python -m offline_converter
 
 命令行入口不会打开图形界面，适合本地 agent、脚本和自动化调用。
 
+本项目还附带 Codex Skill：`skills/fileflow-offline-ai`。安装到 `~/.codex/skills/fileflow-offline-ai` 后，用户可以直接让 agent “用 FileFlow Offline 转换这个文件”，agent 会按 skill 自动定位 `offline-converter-agent.exe`、输出 JSON 并复核结果。
+
 检查依赖：
 
 ```powershell

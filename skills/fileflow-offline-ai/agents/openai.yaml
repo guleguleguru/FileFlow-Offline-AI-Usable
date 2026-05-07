@@ -1,0 +1,4 @@
+interface:
+  display_name: "FileFlow Offline AI"
+  short_description: "Local file conversion with JSON CLI."
+  default_prompt: "Use $fileflow-offline-ai to convert files locally and return JSON output paths."

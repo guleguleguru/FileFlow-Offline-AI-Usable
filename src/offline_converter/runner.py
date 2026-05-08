@@ -27,6 +27,7 @@ def run_task(task: ConversionTask):
             source,
             task.output_dir / f"{source.stem}.docx",
             ocr_enabled=bool(task.options.get("ocr_enabled", True)),
+            mode=str(task.options.get("pdf_word_mode", "visual")),
         )
     if task.kind is ConversionKind.WORD_TO_PDF:
         return word_to_pdf(task.input_paths[0], task.output_dir)

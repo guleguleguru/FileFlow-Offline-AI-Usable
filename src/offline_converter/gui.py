@@ -27,6 +27,8 @@ from PySide6.QtWidgets import (
 )
 
 from offline_converter.dependencies import check_runtime_dependencies
+from offline_converter.errors import error_payload
+from offline_converter.logging_utils import export_logs
 from offline_converter.runner import run_task
 from offline_converter.tasks import ConversionKind, ConversionTask, TaskStatus, accepted_extensions
 
@@ -321,9 +323,13 @@ class MainWindow(QMainWindow):
         self.format_combo.addItems(["png", "jpg"])
         self.ocr_check = QCheckBox("扫描件使用中文 OCR")
         self.ocr_check.setChecked(True)
+        self.pdf_word_mode_combo = QComboBox()
+        self.pdf_word_mode_combo.addItem("原版式优先", "visual")
+        self.pdf_word_mode_combo.addItem("文字可编辑优先", "editable")
         self.option_row.addWidget(self.option_label)
         self.option_row.addWidget(self.pages_edit)
         self.option_row.addWidget(self.format_combo)
+        self.option_row.addWidget(self.pdf_word_mode_combo)
         self.option_row.addWidget(self.ocr_check)
         self.option_row.addStretch()
         layout.addLayout(self.option_row)
@@ -346,9 +352,13 @@ class MainWindow(QMainWindow):
         self.clear_button = QPushButton("清空")
         self.clear_button.setObjectName("secondaryButton")
         self.clear_button.clicked.connect(self.clear_tasks)
+        self.export_logs_button = QPushButton("导出日志")
+        self.export_logs_button.setObjectName("secondaryButton")
+        self.export_logs_button.clicked.connect(self.export_logs)
         action_row.addWidget(self.add_button)
         action_row.addWidget(self.start_button)
         action_row.addStretch()
+        action_row.addWidget(self.export_logs_button)
         action_row.addWidget(self.remove_button)
         action_row.addWidget(self.clear_button)
         layout.addLayout(action_row)
@@ -360,7 +370,7 @@ class MainWindow(QMainWindow):
         issues = check_runtime_dependencies()
         if not issues:
             return
-        message = "\n".join(f"- {issue.message}" for issue in issues)
+        message = "\n".join(f"- {issue.message}\n  处理方式：安装对应 Addon，或使用不依赖该组件的转换方式。" for issue in issues)
         QMessageBox.warning(
             self,
             "部分转换能力需要补充组件",
@@ -376,6 +386,7 @@ class MainWindow(QMainWindow):
         self.pages_edit.setVisible(kind is ConversionKind.PDF_TO_IMAGES)
         self.format_combo.setVisible(kind is ConversionKind.PDF_TO_IMAGES)
         self.ocr_check.setVisible(kind is ConversionKind.PDF_TO_WORD)
+        self.pdf_word_mode_combo.setVisible(kind is ConversionKind.PDF_TO_WORD)
         self.option_label.setVisible(kind in {ConversionKind.PDF_TO_IMAGES, ConversionKind.PDF_TO_WORD})
         if kind is ConversionKind.PDF_TO_IMAGES:
             self.option_label.setText("可选")
@@ -425,6 +436,7 @@ class MainWindow(QMainWindow):
             "image_format": self.format_combo.currentText(),
             "pages": self.pages_edit.text(),
             "ocr_enabled": self.ocr_check.isChecked(),
+            "pdf_word_mode": self.pdf_word_mode_combo.currentData(),
         }
 
     def _append_task(self, task: ConversionTask) -> None:
@@ -465,6 +477,18 @@ class MainWindow(QMainWindow):
         self.tasks.clear()
         self.table.setRowCount(0)
         self._update_summary()
+
+    def export_logs(self) -> None:
+        path, _ = QFileDialog.getSaveFileName(self, "导出日志", str(Path.home() / "Desktop" / "fileflow-logs.zip"), "Zip (*.zip)")
+        if not path:
+            return
+        try:
+            output = export_logs(Path(path))
+        except Exception as exc:
+            payload = error_payload(exc)
+            QMessageBox.warning(self, "日志导出失败", f"{payload['message']}\n\n建议：{payload['action']}")
+        else:
+            QMessageBox.information(self, "日志已导出", f"日志已保存到：\n{output}")
 
     def start_conversion(self) -> None:
         pending = [
@@ -518,6 +542,7 @@ class MainWindow(QMainWindow):
         self.start_button.setEnabled(enabled)
         self.remove_button.setEnabled(enabled)
         self.clear_button.setEnabled(enabled)
+        self.export_logs_button.setEnabled(enabled)
         for button in self.kind_group.buttons():
             button.setEnabled(enabled)
 

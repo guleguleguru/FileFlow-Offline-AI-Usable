@@ -15,6 +15,9 @@ build/
 dist/
 dist-*/
 release-components*/
+packaging/inno/Output/
+packaging/addons/ocr/
+!packaging/addons/README.md
 *.zip
 *.partial
 *.spec.log
@@ -26,6 +29,8 @@ vendor/
 agent-output/
 conversion-review/
 packaged-agent-output/
+tests/samples/private/
+PROJECT_MEMORY.md
 *.pdf
 *.docx
 *.doc

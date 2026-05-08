@@ -42,7 +42,7 @@ Check dependencies:
 PDF to Word:
 
 ```powershell
-& "PATH\offline-converter-agent.exe" convert --kind pdf-to-word --input "file.pdf" --output-dir "agent-output" --json
+& "PATH\offline-converter-agent.exe" convert --kind pdf-to-word --pdf-word-mode visual --input "file.pdf" --output-dir "agent-output" --json
 ```
 
 Image(s) to PDF:
@@ -65,6 +65,13 @@ Word to PDF:
 
 The JSON result contains `ok`, `tasks`, `status`, `inputs`, `outputs`, `page_count`, and `error`. Use `outputs` for follow-up validation or user reporting.
 
+Diagnostics:
+
+```powershell
+& "PATH\offline-converter-agent.exe" diagnose --json
+& "PATH\offline-converter-agent.exe" export-logs --output logs.zip --json
+```
+
 ## Validation Workflow
 
 After a conversion:
@@ -75,7 +82,14 @@ After a conversion:
 4. For PDF to images, compare exported image count with requested pages.
 5. For Word to PDF, confirm the output PDF exists and has nonzero size.
 
-For PDF to Word, set expectations clearly: FileFlow prioritizes editable text. It does not promise perfect reconstruction of complex table or form layout.
+For PDF to Word, set expectations clearly: `visual` embeds each PDF page as a Word image for appearance preservation; `editable` prioritizes editable extracted text. Neither mode promises perfect native Word table editing for complex PDF forms.
+
+For release validation with real PDFs, use only local sanitized files:
+
+```powershell
+$env:FILEFLOW_REAL_SAMPLE_DIR="D:\fileflow-real-samples"
+python -m pytest tests\test_real_pdf_samples.py
+```
 
 ## Repository Hygiene
 

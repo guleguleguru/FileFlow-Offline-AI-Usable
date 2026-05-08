@@ -7,7 +7,9 @@ import pytest
 from docx import Document
 from PIL import Image
 
+from offline_converter import converters
 from offline_converter.converters import (
+    ConversionError,
     MissingDependencyError,
     image_to_pdf,
     pdf_to_images,
@@ -128,9 +130,50 @@ def test_pdf_to_word_uses_ocr_for_blank_pages_in_mixed_pdf(tmp_path: Path) -> No
     assert "OCR fallback page" in text
 
 
+def test_ocr_model_dirs_copy_non_ascii_paths_for_paddle(monkeypatch, tmp_path: Path) -> None:
+    source = tmp_path / "中文模型" / "ch_PP-OCRv4_det_infer"
+    source.mkdir(parents=True)
+    (source / "inference.pdmodel").write_bytes(b"model")
+    cache_root = tmp_path / "ascii-cache"
+
+    monkeypatch.setattr(converters, "app_data_dir", lambda: cache_root)
+
+    result = converters._ocr_model_dirs_for_paddle({"det_model_dir": source})
+
+    assert result == {"det_model_dir": str(cache_root / "ocr-models" / source.name)}
+    assert (cache_root / "ocr-models" / source.name / "inference.pdmodel").exists()
+
+
 def test_word_to_pdf_reports_missing_libreoffice(tmp_path: Path) -> None:
     source = tmp_path / "sample.docx"
     Document().save(source)
 
     with pytest.raises(MissingDependencyError, match="LibreOffice"):
         word_to_pdf(source, tmp_path, soffice_path=tmp_path / "missing-soffice.exe")
+
+
+def test_pdf_to_images_reports_invalid_page_range_with_stable_code(tmp_path: Path) -> None:
+    source_pdf = tmp_path / "source.pdf"
+    doc = fitz.open()
+    doc.new_page()
+    doc.save(source_pdf)
+    doc.close()
+
+    with pytest.raises(ConversionError) as exc_info:
+        pdf_to_images(source_pdf, tmp_path / "pages", pages=[2])
+
+    assert exc_info.value.code == "invalid_pages"
+    assert "页码" in exc_info.value.action
+
+
+def test_pdf_to_word_reports_scanned_pdf_without_ocr_with_stable_code(tmp_path: Path) -> None:
+    scan_image = tmp_path / "scan.png"
+    make_image(scan_image, (255, 255, 255), size=(240, 120))
+    source_pdf = tmp_path / "scan.pdf"
+    Image.open(scan_image).save(source_pdf)
+
+    with pytest.raises(ConversionError) as exc_info:
+        pdf_to_word(source_pdf, tmp_path / "scan.docx", ocr_enabled=False)
+
+    assert exc_info.value.code == "scanned_pdf_requires_ocr"
+    assert "OCR" in exc_info.value.action
